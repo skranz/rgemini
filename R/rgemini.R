@@ -1,11 +1,44 @@
 
 example = function() {
-  set_gemini_api_key(file = "C:/libraries/gpt/gemini/gemini_api_key.txt")
+  set_gemini_api_key(file = "~/repbox/gemini/gemini_api_key.txt")
   result = run_gemini("Tell 3 jokes. Return JSON with fields 'topic' and 'joke'.",json_mode = TRUE)
   df = fromJSON(result$content)
   result = run_gemini("Tell a joke.", add_prompt=TRUE, json_mode = FALSE)
   res = result
   gemini_result_to_df(result)
+
+  schema =
+
+  response_schema <- list(
+    type = "object",
+    properties = list(
+      answer = list(type = "string"),
+      confidence = list(type = "number")
+    ),
+    required = c("answer", "confidence")
+  )
+  schema = gemini_response_schema("object",list(answer = "Paris", confidence = 0.95, remark="once was called Lutetia"))
+
+  # Call the function with structured output.
+  result <- run_gemini(
+    prompt = "List 3 asian countries, their capital, the most famous building and inhabitants in million.",
+    json_mode = TRUE,
+    response_schema = gemini_response_schema("array",
+      list(city = "Paris", country="France", famous_building="Eiffel Tower", population = 5.2)),
+    temperature = 0.0,
+    verbose = !TRUE,
+    just_content = TRUE
+  )
+  result$content
+
+}
+
+gemini_content = function(result) {
+  if (result$json_mode) {
+    fromJSON(result$content)
+  } else {
+    result$content
+  }
 }
 
 set_gemini_api_key = function(key=NULL, file=NULL) {
@@ -46,7 +79,7 @@ gemini_result_to_df = function(res, ...) {
   return(as.data.frame(li))
 }
 
-run_gemini = function(prompt, model="gemini-2.0-flash", json_mode=FALSE, temperature=0.1,img_mimeType=NULL, img_base64=NULL, add_prompt=FALSE, verbose=FALSE, api_key=getOption("gemini_api_key"), as_data_frame=TRUE) {
+run_gemini = function(prompt, model="gemini-2.0-flash", json_mode=!is.null(response_schema),response_schema = NULL, temperature=0.1,img_mimeType=NULL, img_base64=NULL, add_prompt=FALSE, verbose=FALSE, api_key=getOption("gemini_api_key"), as_data_frame=TRUE, just_content=FALSE) {
   library(httr)
   library(jsonlite)
   if (is.null(api_key)) {
@@ -61,6 +94,11 @@ run_gemini = function(prompt, model="gemini-2.0-flash", json_mode=FALSE, tempera
   if (json_mode) {
     generationConfig$response_mime_type = "application/json"
   }
+  # If a structured output schema is provided, add it to the generation configuration.
+  if (!is.null(response_schema)) {
+    generationConfig$response_schema <- response_schema
+  }
+
 
   part = list(text=prompt)
 
@@ -119,6 +157,10 @@ run_gemini = function(prompt, model="gemini-2.0-flash", json_mode=FALSE, tempera
   res$model = model
   res$json_mode = json_mode
   res$temperature = temperature
+  if (just_content) {
+    df = gemini_result_to_df(res)
+    return(gemini_content(df))
+  }
   if (!as_data_frame) {
     return(res)
   }
