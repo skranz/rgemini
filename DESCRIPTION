@@ -1,0 +1,13 @@
+Package: rgemini
+Type: Package
+Title: R interface to Google Gemini API
+Version: 0.1.0
+Author: Sebastian Kranz
+Maintainer: Sebastian Kranz <sebastian.kranz@uni-ulm.de>
+Description: There are similar packages like gemini.R on CRAN.
+  But this package will be developed to implement the features
+  I personally need for my research.
+License: GPL>=2.0
+Depends: jsonlite, httr
+Encoding: UTF-8
+LazyData: true
