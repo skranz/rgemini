@@ -29,29 +29,6 @@ Otherwise try to install directly from Github.
 ## 1. Set API key and Basic prompt
 
 
-```
-## Loading required package: jsonlite
-```
-
-```
-## Loading required package: httr
-```
-
-```
-## Loading required package: restorepoint
-```
-
-```
-## 
-## Attaching package: 'rgemini'
-```
-
-```
-## The following object is masked from 'package:utils':
-## 
-##     example
-```
-
 Load library and specify API key.
 
 ```r
@@ -177,7 +154,7 @@ That is the image we upload:
 
 
 ```r
-img_file = paste0("~/repbox/gemini/word_img.png")
+img_file = paste0("word_img.png")
 media <- gemini_media_upload(img_file)
 run_gemini("Please write down all words you can detect in the image.", media=media)
 ```
@@ -191,7 +168,7 @@ run_gemini("Please write down all words you can detect in the image.", media=med
 
 
 ```r
-files = c("~/repbox/gemini/word_img.png", "~/repbox/gemini/colors_pdf.pdf")
+files = c("word_img.png", "~/repbox/gemini/colors_pdf.pdf")
 media <- gemini_media_upload(files)
 run_gemini("Please write down all words you can detect in the uploaded pdf and image.", media=media)
 ```
