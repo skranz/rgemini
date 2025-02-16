@@ -120,10 +120,10 @@ schema = response_schema(obj_resp(
   facts = arr_resp(factno=1L, name="fact1", descr="fact_description")
 ))
 
-# For this schema run_gemini returns a data frame with nested data frames
-df = run_gemini(prompt = prompt,response_schema = schema)
-str(df)
-```
+# For this schema run_gemini currently
+# returns a list (obj_resp) or data frame (arr_resp) with nested data frames
+res = run_gemini(prompt = prompt,response_schema = schema)
+str(res)```
 
 ```
 ## List of 5
