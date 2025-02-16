@@ -5,12 +5,23 @@ output:
 ---
 # R interface to Google Gemini API
 
-Functions to use Gemini from R. In development. Currently supports:
+Functions to use Gemini API from R. In development. Currently supports:
 
 - Basic prompts
 - JSON output also with structured response
 - Upload of images, pdf and other documents
 
+See examples below.
+
+# Installation
+
+Soon it should be available on r-universe. Then call:
+
+```r
+install.packages('rgemini', repos = c('https://skranz.r-universe.dev', 'https://cloud.r-project.org'))
+```
+
+Otherwise try to install directly from Github.
 
 # Examples
 
