@@ -16,7 +16,7 @@ Soon it should be available on r-universe. Then call:
 install.packages('rgemini', repos = c('https://skranz.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
-Otherwise try to install directly from Github.
+If that does not yet work, download the ZIP and build locally the R project.
 
 # Examples
 

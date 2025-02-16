@@ -4,18 +4,14 @@ example = function() {
   set_gemini_api_key(file = "~/repbox/gemini/gemini_api_key.txt")
 
 
-  #######################################
   # 1. Basic use
-  #######################################
 
   run_gemini("Tell a joke.")
 
   # More detailed output
   run_gemini("Tell a joke.",just_content = FALSE)
 
-  ####################################
   # 2. JSON mode without schema
-  ####################################
 
   run_gemini("Tell 2 jokes. Return JSON with fields 'topic' and 'joke'.",json_mode = TRUE,just_content = FALSE)
 
@@ -152,7 +148,7 @@ gemini_result_to_df = function(res, ...) {
 #'
 #' @export
 run_gemini = function(prompt, model="gemini-2.0-flash", media=NULL, json_mode=!is.null(response_schema),response_schema = NULL, temperature=0.1, add_prompt=FALSE, verbose=FALSE, api_key=getOption("gemini_api_key"), just_content=TRUE, httr_response=FALSE) {
-  restore.point("run_gemini")
+  #restore.point("run_gemini")
   if (is.null(api_key)) {
     stop("Please set an api key by calling set_gemini_api_key.")
   }
