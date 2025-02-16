@@ -123,7 +123,8 @@ schema = response_schema(obj_resp(
 # For this schema run_gemini currently
 # returns a list (obj_resp) or data frame (arr_resp) with nested data frames
 res = run_gemini(prompt = prompt,response_schema = schema)
-str(res)```
+str(res)
+```
 
 ```
 ## List of 5
