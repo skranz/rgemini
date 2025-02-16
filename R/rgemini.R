@@ -1,38 +1,77 @@
 
 example = function() {
+  library(rgemini)
   set_gemini_api_key(file = "~/repbox/gemini/gemini_api_key.txt")
-  result = run_gemini("Tell 3 jokes. Return JSON with fields 'topic' and 'joke'.",json_mode = TRUE)
-  df = fromJSON(result$content)
-  result = run_gemini("Tell a joke.", add_prompt=TRUE, json_mode = FALSE)
-  res = result
-  gemini_result_to_df(result)
 
-  schema =
 
-  response_schema <- list(
-    type = "object",
-    properties = list(
-      answer = list(type = "string"),
-      confidence = list(type = "number")
-    ),
-    required = c("answer", "confidence")
-  )
-  schema = gemini_response_schema("object",list(answer = "Paris", confidence = 0.95, remark="once was called Lutetia"))
+  #######################################
+  # 1. Basic use
+  #######################################
 
-  # Call the function with structured output.
-  result <- run_gemini(
-    prompt = "List 3 asian countries, their capital, the most famous building and inhabitants in million.",
+  run_gemini("Tell a joke.")
+
+  # More detailed output
+  run_gemini("Tell a joke.",just_content = FALSE)
+
+  ####################################
+  # 2. JSON mode without schema
+  ####################################
+
+  run_gemini("Tell 2 jokes. Return JSON with fields 'topic' and 'joke'.",json_mode = TRUE,just_content = FALSE)
+
+  # directly parses json
+  run_gemini("Tell 2 jokes. Return JSON with fields 'topic' and 'joke'.",json_mode = TRUE,just_content = TRUE)
+
+  ######################################
+  # 3. JSON mode with a response schema
+  ######################################
+
+  prompt = "List 3 asian countries, their capital, the most famous building and the countries' inhabitants in million."
+  # creates a schema from an example
+  schema = response_schema(arr_resp(capital = "Paris", country="France", famous_building="Eiffel Tower", population = 60.1))
+
+  run_gemini(prompt = prompt,response_schema = schema)
+
+  # A more complex nested response
+
+  prompt = "Show info for one african country, its capital with name and population in mio, the most famous building and inhabitants in million. Add three facts about the country."
+  schema = response_schema(obj_resp(
+    capital = obj_resp(capital="Paris", cap_pop=5),
+    country="France", famous_building="Eiffel Tower",
+    population = 60.2,
+    facts = arr_resp(name="fact1", descr="fact_description")
+  ))
+  # returns a data frame with nested data frames
+  df = run_gemini(
+    prompt = prompt,
     json_mode = TRUE,
-    response_schema = gemini_response_schema("array",
-      list(city = "Paris", country="France", famous_building="Eiffel Tower", population = 5.2)),
-    temperature = 0.0,
-    verbose = !TRUE,
+    response_schema = schema,
     just_content = TRUE
   )
-  result$content
+  str(df)
+
+  ######################################
+  # 4. Use image
+  ######################################
+
+  img_file = paste0("~/repbox/gemini/word_img.png")
+  media <- gemini_media_upload(img_file)
+  run_gemini("Please write down all words you can detect in the image.", media=media, just_content = TRUE)
+
+  ######################################
+  # 5. Use PDF and image
+  ######################################
+  files = c("~/repbox/gemini/word_img.png", "~/repbox/gemini/colors_pdf.pdf")
+  media <- gemini_media_upload(files)
+  run_gemini("Please write down all words you can detect in the uploaded pdf and image.", media=media)
+
+  # Structured output from multiple files
+  run_gemini("Please write down and classify all words you can detect in the uploaded files.", media=media, response_schema = gemini_response_schema("array", list(file_number=1L, word="blue",type_of_word="")))
+
 
 }
 
+#' Extract content from a more detailed run_gemini response
 gemini_content = function(result) {
   if (result$json_mode) {
     fromJSON(result$content)
@@ -41,6 +80,7 @@ gemini_content = function(result) {
   }
 }
 
+#' Set your Gemini API
 set_gemini_api_key = function(key=NULL, file=NULL) {
   if (is.null(key)) {
     key = suppressWarnings(readLines(file))
@@ -49,7 +89,6 @@ set_gemini_api_key = function(key=NULL, file=NULL) {
 }
 
 gemini_result_to_df = function(res, ...) {
-
   prompt_var = if (is.null(res[["prompt"]])) NULL else "prompt"
   if (!is.null(res$error)) {
     li = c(
@@ -79,9 +118,41 @@ gemini_result_to_df = function(res, ...) {
   return(as.data.frame(li))
 }
 
-run_gemini = function(prompt, model="gemini-2.0-flash", json_mode=!is.null(response_schema),response_schema = NULL, temperature=0.1,img_mimeType=NULL, img_base64=NULL, add_prompt=FALSE, verbose=FALSE, api_key=getOption("gemini_api_key"), as_data_frame=TRUE, just_content=FALSE) {
-  library(httr)
-  library(jsonlite)
+#' Generate Content with Gemini API
+#'
+#' Sends a text prompt (and optionally one or more media objects) to the Gemini API to generate content.
+#'
+#' @param prompt A character string containing the text prompt to be sent to the Gemini API.
+#' @param model A character string specifying the Gemini model to use. Defaults to `"gemini-2.0-flash"`.
+#' @param media Either a single media object or a list of media objects to be included in the prompt. Call \code{\link{gemini_media_upload}} to upload the document or media.
+#' @param json_mode Logical. If \code{TRUE}, expects the response in JSON format. Defaults to \code{!is.null(response_schema)}.
+#' @param response_schema Optional structured output schema for the response. Defaults to \code{NULL}.
+#' @param temperature A numeric value controlling the randomness of the output. Defaults to 0.1.
+#' @param add_prompt Logical. If \code{TRUE}, includes the prompt in the returned result. Defaults to \code{FALSE}.
+#' @param verbose Logical. If \code{TRUE}, prints debugging and request information. Defaults to \code{FALSE}.
+#' @param api_key A character string containing your Gemini API key. Defaults to the value obtained from \code{getOption("gemini_api_key")}.
+#' @param just_content Logical. If \code{TRUE}, returns only the content portion of the result. JSON is transformed to R. Defaults to \code{TRUE}. Otherwise a data frame with the response of the POST call is returned, which includes fields like status_code.
+#' @param httr_response Logical. Only relevant if just_content=FALSE. Returns POST response in original format, not transformed to a more convenient data set.
+#'
+#' @return A list containing the Gemini API response. If \code{as_data_frame} is \code{TRUE}, the response is converted to a data frame.
+#'
+#' @details
+#' The function builds a JSON payload that includes the provided text prompt as well as any media objects supplied via the \code{media} parameter.
+#' Each media object is appended to the \code{parts} of the request under the \code{file_data} key. The payload is then sent via a POST request
+#' to the Gemini API endpoint for content generation.
+#'
+#' @examples
+#' \dontrun{
+#' # Example using only a text prompt:
+#' result <- run_gemini(prompt = "Tell a joke", verbose = TRUE)
+#'
+#' }
+#'
+#' @seealso \code{\link[httr]{POST}}, \code{\link[jsonlite]{toJSON}}
+#'
+#' @export
+run_gemini = function(prompt, model="gemini-2.0-flash", media=NULL, json_mode=!is.null(response_schema),response_schema = NULL, temperature=0.1, add_prompt=FALSE, verbose=FALSE, api_key=getOption("gemini_api_key"), just_content=TRUE, httr_response=FALSE) {
+  restore.point("run_gemini")
   if (is.null(api_key)) {
     stop("Please set an api key by calling set_gemini_api_key.")
   }
@@ -100,25 +171,24 @@ run_gemini = function(prompt, model="gemini-2.0-flash", json_mode=!is.null(respo
   }
 
 
-  part = list(text=prompt)
+  parts = list(list(text=prompt))
 
-  if (!is.null(img_base64)) {
-    # { "inlineData": {
-    #   "mimeType": "image/png",
-    #   "data": "'$(base64 -w0 cookie.png)'"
-    # }
-    part$inlineData = list(
-      mimeType = img_mimeType,
-      data = img_base64
-    )
-
+  # If media is provided, add one or several media parts.
+  if (!is.null(media)) {
+    # If media is not already a list of media objects, wrap it in a list.
+    if (!is.list(media) || (is.list(media) && !is.list(media[[1]]) &&
+                            all(c("mime_type", "file_uri") %in% names(media)))) {
+      media <- list(media)
+    }
+    for (m in media) {
+      parts[[length(parts) + 1]] <- list(file_data = m)
+    }
   }
+
 
   body = list(
     contents = list(
-      parts = list(
-        part
-      )
+      parts = parts
     ),
     generationConfig = generationConfig
   )
@@ -161,9 +231,10 @@ run_gemini = function(prompt, model="gemini-2.0-flash", json_mode=!is.null(respo
     df = gemini_result_to_df(res)
     return(gemini_content(df))
   }
-  if (!as_data_frame) {
+  if (httr_response) {
     return(res)
   }
   gemini_result_to_df(res)
 
 }
+

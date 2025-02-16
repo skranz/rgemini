@@ -8,6 +8,7 @@ Description: There are similar packages like gemini.R on CRAN.
   But this package will be developed to implement the features
   I personally need for my research.
 License: GPL>=2.0
-Depends: jsonlite, httr
+Depends: jsonlite, httr, restorepoint
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 7.3.1

@@ -1,0 +1,116 @@
+---
+output: 
+  html_document: 
+    keep_md: yes
+---
+# R interface to Google Gemini API
+
+Functions to use Gemini from R. In development. Currently supports:
+
+- Basic prompts
+- JSON output also with structured response
+- Upload of images, pdf and other documents
+
+
+# Examples
+
+
+## 1. Set API key and Basic prompt
+
+```{r echo=FALSE}
+library(rgemini)
+set_gemini_api_key(file = "~/repbox/gemini/gemini_api_key.txt")
+```
+
+Load library and specify API key.
+```{r eval=FALSE}
+library(rgemini)
+set_gemini_api_key("<YOUR GEMINI API KEY>")
+```
+
+A simple prompt.
+```{r}
+run_gemini("Tell a joke.")
+```
+
+Return more details of Gemini API response (possible error codes etc)
+
+```{r}
+run_gemini("Tell a joke.",just_content = FALSE)
+```
+
+
+## 2. JSON mode without schema
+
+```{r}
+run_gemini("Tell 2 jokes. Return JSON with fields 'topic' and 'joke'.",json_mode = TRUE)
+```
+
+If you set just_content=FALSE the content field contents the JSON text.
+```{r}
+run_gemini("Tell 2 jokes. Return JSON with fields 'topic' and 'joke'.",json_mode = TRUE,just_content = FALSE)
+```
+
+
+# 3. JSON mode with a response schema
+
+We use `arr_resp` or `obj_resp` to build an example response, from which `response_schema` builds a proper JSON schema that can be passed to `run_gemini`
+
+```{r}
+prompt = "List 3 asian countries, their capital, the most famous building and the countries' inhabitants in million."
+
+# Creates a schema from an example
+schema = response_schema(arr_resp(capital = "Paris", country="France", famous_building="Eiffel Tower", population = 60.1))
+
+run_gemini(prompt = prompt,response_schema = schema)
+
+```
+
+Here is a more comples nested schema. Will return nested tibbles.
+
+```{r}
+prompt = "Show info for one african country, its capital with name and population in mio, the most famous building and inhabitants in million. Add three facts about the country."
+
+# obj_resp expects to return a single object
+# arr_resp expected a list of objects
+# Both can be nested
+schema = response_schema(obj_resp(
+  capital = obj_resp(capital="Paris", cap_pop=5),
+  country="France", famous_building="Eiffel Tower",
+  population = 60.2,
+  facts = arr_resp(factno=1L, name="fact1", descr="fact_description")
+))
+
+# For this schema run_gemini returns a data frame with nested data frames
+df = run_gemini(prompt = prompt,response_schema = schema)
+str(df)
+```
+
+
+## 4. Use an image
+
+That is the image we upload:
+
+![image](word_img.png)
+
+
+```{r}
+img_file = paste0("~/repbox/gemini/word_img.png")
+media <- gemini_media_upload(img_file)
+run_gemini("Please write down all words you can detect in the image.", media=media)
+```
+
+
+## 5. Use a PDF and an Image
+
+```{r}
+files = c("~/repbox/gemini/word_img.png", "~/repbox/gemini/colors_pdf.pdf")
+media <- gemini_media_upload(files)
+run_gemini("Please write down all words you can detect in the uploaded pdf and image.", media=media)
+```
+
+Finally, an example with structured output from the uploaded documents:
+```{r}
+run_gemini("Please write down and classify all words you can detect in the uploaded files.", media=media, response_schema = response_schema(arr_resp(file_number=1L, word="blue",type_of_word="")))
+```
+
