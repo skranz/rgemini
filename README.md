@@ -1,8 +1,3 @@
----
-output: 
-  html_document: 
-    keep_md: yes
----
 # R interface to Google Gemini API
 
 Functions to use Gemini API from R. In development. Currently supports:
