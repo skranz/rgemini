@@ -144,7 +144,7 @@ str(df)
 
 That is the image we upload:
 
-![image](word_img.png)
+![image](docs/word_img.png)
 
 
 
