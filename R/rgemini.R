@@ -2,7 +2,47 @@
 example = function() {
   library(rgemini)
   set_gemini_api_key(file = "~/repbox/gemini/gemini_api_key.txt")
+  files = "~/repbox/projects_share/aejapp_1_2_4/art/pdf/aejapp_1_2_4.pdf"
+  media <- gemini_media_upload(files)
 
+  content = run_gemini("Please extract Table 3 in the PDF as HTML table. Include table titles and table notes. Please make sure to include all numbers as they are. Just return the complete HTML file.
+
+IMPORTANT: Make sure to have enough different columns and rows. Each number shall be in a a different table cell.
+
+IMPORTANT: In regression tables ensure that coefficients and standard errors are in different table cells. Usually they will be in different <tr> rows.
+
+IMPORTANT: Check whether really all numbers are correctly parsed and in the right position. If not, correct the table.
+                       ", media=media)
+  writeLines(content, "~/repbox/temp_tab3b.html")
+
+  content = run_gemini("Please extract all tables in the PDF as HTML tables. Include table titles and table notes. Please make sure to include all numbers as they are. Just return the complete HTML file (no markdown markup).
+
+IMPORTANT: Make sure to have enough different columns and rows. Each number shall be in a a different table cell.
+
+IMPORTANT: In regression tables ensure that coefficients and standard errors are in different table cells. Usually they will be in different <tr> rows.
+
+IMPORTANT: Check whether really all numbers are correctly parsed and in the right position. If not, correct the table.
+                       ", media=media)
+  writeLines(content, "~/repbox/temp_tables.html")
+
+
+  library(rgemini)
+  set_gemini_api_key(file = "~/repbox/gemini/gemini_api_key.txt")
+
+  files = "~/repbox/temp_tab3b.html"
+  media_html <- gemini_media_upload(files)
+  schema = response_schema(arr_resp(
+    tabid = "Table 1", table_title = "", table_main_html="", table_notes = ""))
+  prompt = "Please extract all HTML tables from the attached .html document. Return as a JSON with fields:
+  tabid: Table ID, e.g. 'Table 1'
+  table_title: The table title
+  table_main_html: The HTML code of the table. Make sure to properly escape the quotes in the HTML code so that it can be part of the JSON field.
+  table_notes: The table notes
+  "
+  res = run_gemini(prompt=prompt,response_schema = schema, media=media_html,just_content = FALSE)
+  content = gemini_content(res)
+
+  writeLines(content$table_main_html, "~/repbox/test_tab3.html")
 
   # 1. Basic use
 

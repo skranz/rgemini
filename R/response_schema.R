@@ -28,7 +28,6 @@ arr_resp = function(...) {
   x
 }
 
-
 #' Create an Object Response Template
 #'
 #' This function creates a template for a single JSON object response.
@@ -48,6 +47,52 @@ obj_resp <- function(...) {
   x
 }
 
+#' Infer the JSON Response Type
+#'
+#' This function inspects the provided value and returns a string representing the
+#' JSON type. It distinguishes between objects, arrays, and primitive types.
+#'
+#' @param x The value to inspect.
+#'
+#' @return A character string: one of "null", "object", "array", "string", "integer",
+#'         "number", or "boolean".
+infer_response_type <- function(x) {
+  if (is.null(x)) {
+    return("null")
+  } else if (inherits(x, "obj_resp")) {
+    return("object")
+  } else if (inherits(x, "arr_resp")) {
+    return("array")
+  } else if (is.atomic(x)) {
+    if (length(x) == 1) {
+      if (is.character(x)) {
+        return("string")
+      } else if (is.numeric(x)) {
+        if (all(x == as.integer(x))) {
+          return("integer")
+        } else {
+          return("number")
+        }
+      } else if (is.logical(x)) {
+        return("boolean")
+      } else {
+        return("string")
+      }
+    } else {
+      # For an atomic vector with length > 1, treat it as an array.
+      return("array")
+    }
+  } else if (is.list(x)) {
+    if (!is.null(names(x)) && any(names(x) != "")) {
+      return("object")
+    } else {
+      return("array")
+    }
+  } else {
+    return("string")
+  }
+}
+
 #' Generate a JSON Schema from a Response Template
 #'
 #' This function recursively generates a JSON Schema based on a response template.
@@ -59,20 +104,17 @@ obj_resp <- function(...) {
 #'
 #' @return A list representing the inferred JSON Schema for the provided response template.
 response_schema <- function(example) {
-  # Recursive helper function to infer a JSON Schema fragment.
-  # The argument in_array indicates whether we're already inside an array context.
-  infer_schema <- function(x, in_array = FALSE) {
-    if (is.null(x)) {
+  # Recursive helper function to generate a JSON Schema fragment.
+  schema_fragment <- function(x, in_array = FALSE) {
+    t <- infer_response_type(x)
+
+    if (t == "null") {
       return(list(type = "null"))
-    } else if (inherits(x, "obj_resp")) {
-      # Process an object response.
-      if (is.null(names(x)) || !any(names(x) != "")) {
-        stop("For an object response, the example must be a named list.")
-      }
+    } else if (t == "object") {
       properties <- list()
       required <- c()
       for (nm in names(x)) {
-        properties[[nm]] <- infer_schema(x[[nm]], in_array = FALSE)
+        properties[[nm]] <- schema_fragment(x[[nm]], in_array = FALSE)
         required <- c(required, nm)
       }
       return(list(
@@ -80,99 +122,34 @@ response_schema <- function(example) {
         properties = properties,
         required = required
       ))
-    } else if (inherits(x, "arr_resp")) {
-      # Process an array response.
+    } else if (t == "array") {
+      # If we're not already inside an array, then if x is a single (named) object, wrap it.
       if (!in_array) {
-        # At the top level, if x is a single object (named list), wrap it into a list.
         if (is.list(x) && !is.null(names(x))) {
           x <- list(x)
         } else if (!is.list(x)) {
           x <- list(x)
         }
-        if (length(x) == 0) {
-          return(list(type = "array", items = list()))
-        } else {
-          # Now, signal that we're inside an array.
-          item_schema <- infer_schema(x[[1]], in_array = TRUE)
-          return(list(type = "array", items = item_schema))
-        }
-      } else {
-        # When already inside an array, do not rewrap.
-        # Instead, treat x as a plain object (if named) or as an array.
-        if (is.list(x) && !is.null(names(x)) && any(names(x) != "")) {
-          properties <- list()
-          required <- c()
-          for (nm in names(x)) {
-            properties[[nm]] <- infer_schema(x[[nm]], in_array = FALSE)
-            required <- c(required, nm)
-          }
-          return(list(
-            type = "object",
-            properties = properties,
-            required = required
-          ))
-        } else {
-          if (length(x) == 0) {
-            return(list(type = "array", items = list()))
-          } else {
-            item_schema <- infer_schema(x[[1]], in_array = TRUE)
-            return(list(type = "array", items = item_schema))
-          }
-        }
       }
-    } else if (is.atomic(x)) {
-      # Process atomic values.
-      if (length(x) == 1) {
-        if (is.character(x)) {
-          return(list(type = "string"))
-        } else if (is.numeric(x)) {
-          if (all(x == as.integer(x))) {
-            return(list(type = "integer"))
-          } else {
-            return(list(type = "number"))
-          }
-        } else if (is.logical(x)) {
-          return(list(type = "boolean"))
-        } else {
-          return(list(type = "string"))
-        }
+      if (length(x) == 0) {
+        items <- list()
       } else {
-        # For an atomic vector with length > 1, treat it as an array.
-        item_schema <- infer_schema(x[1], in_array = TRUE)
-        return(list(type = "array", items = item_schema))
+        items <- schema_fragment(x[[1]], in_array = TRUE)
       }
-    } else if (is.list(x)) {
-      # Process plain lists that are not marked as obj_resp or arr_resp.
-      if (!is.null(names(x)) && any(names(x) != "")) {
-        properties <- list()
-        required <- c()
-        for (nm in names(x)) {
-          properties[[nm]] <- infer_schema(x[[nm]], in_array = FALSE)
-          required <- c(required, nm)
-        }
-        return(list(
-          type = "object",
-          properties = properties,
-          required = required
-        ))
-      } else {
-        if (length(x) == 0) {
-          return(list(type = "array", items = list()))
-        } else {
-          item_schema <- infer_schema(x[[1]], in_array = TRUE)
-          return(list(type = "array", items = item_schema))
-        }
-      }
+      return(list(type = "array", items = items))
     } else {
-      # Fallback: treat as a string.
-      return(list(type = "string"))
+      # For primitive types ("string", "integer", "number", "boolean")
+      return(list(type = t))
     }
   }
 
-  # Top-level: the example must be an obj_resp or arr_resp.
-  if (inherits(example, "obj_resp") || inherits(example, "arr_resp")) {
-    return(infer_schema(example, in_array = FALSE))
-  } else {
+  if (!(inherits(example, "obj_resp") || inherits(example, "arr_resp"))) {
     stop("Example must have class 'obj_resp' or 'arr_resp'")
   }
+
+  return(schema_fragment(example, in_array = FALSE))
 }
+
+
+
+
