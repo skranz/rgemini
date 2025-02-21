@@ -217,6 +217,7 @@ run_gemini = function(prompt, model="gemini-2.0-flash", media=NULL, json_mode=!i
       media <- list(media)
     }
     for (m in media) {
+      m = m[c("mime_type", "file_uri")]
       parts[[length(parts) + 1]] <- list(file_data = m)
     }
   }
