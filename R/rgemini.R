@@ -1,7 +1,12 @@
 
 example = function() {
   library(rgemini)
+
+
   set_gemini_api_key(file = "~/repbox/gemini/gemini_api_key.txt")
+  res = run_gemini("tell 5 jokes. return json", json_mode=TRUE,detailed_results = TRUE)
+
+
   files = "~/repbox/projects_share/aejapp_1_2_4/art/pdf/aejapp_1_2_4.pdf"
   media <- gemini_media_upload(files)
 
@@ -39,61 +44,6 @@ IMPORTANT: Check whether really all numbers are correctly parsed and in the righ
   table_main_html: The HTML code of the table. Make sure to properly escape the quotes in the HTML code so that it can be part of the JSON field.
   table_notes: The table notes
   "
-  res = run_gemini(prompt=prompt,response_schema = schema, media=media_html,just_content = FALSE)
-  content = gemini_content(res)
-
-  writeLines(content$table_main_html, "~/repbox/test_tab3.html")
-
-  # 1. Basic use
-
-  run_gemini("Tell a joke.")
-
-  # More detailed output
-  run_gemini("Tell a joke.",just_content = FALSE)
-
-  # 2. JSON mode without schema
-
-  run_gemini("Tell 2 jokes. Return JSON with fields 'topic' and 'joke'.",json_mode = TRUE,just_content = FALSE)
-
-  # directly parses json
-  run_gemini("Tell 2 jokes. Return JSON with fields 'topic' and 'joke'.",json_mode = TRUE,just_content = TRUE)
-
-  ######################################
-  # 3. JSON mode with a response schema
-  ######################################
-
-  prompt = "List 3 asian countries, their capital, the most famous building and the countries' inhabitants in million."
-  # creates a schema from an example
-  schema = response_schema(arr_resp(capital = "Paris", country="France", famous_building="Eiffel Tower", population = 60.1))
-
-  run_gemini(prompt = prompt,response_schema = schema)
-
-  # A more complex nested response
-
-  prompt = "Show info for one african country, its capital with name and population in mio, the most famous building and inhabitants in million. Add three facts about the country."
-  schema = response_schema(obj_resp(
-    capital = obj_resp(capital="Paris", cap_pop=5),
-    country="France", famous_building="Eiffel Tower",
-    population = 60.2,
-    facts = arr_resp(name="fact1", descr="fact_description")
-  ))
-  # returns a data frame with nested data frames
-  df = run_gemini(
-    prompt = prompt,
-    json_mode = TRUE,
-    response_schema = schema,
-    just_content = TRUE
-  )
-  str(df)
-
-  ######################################
-  # 4. Use image
-  ######################################
-
-  img_file = paste0("~/repbox/gemini/word_img.png")
-  media <- gemini_media_upload(img_file)
-  run_gemini("Please write down all words you can detect in the image.", media=media, just_content = TRUE)
-
   ######################################
   # 5. Use PDF and image
   ######################################
@@ -107,51 +57,12 @@ IMPORTANT: Check whether really all numbers are correctly parsed and in the righ
 
 }
 
-#' Extract content from a more detailed run_gemini response
-gemini_content = function(result) {
-  if (result$json_mode) {
-    fromJSON(result$content)
-  } else {
-    result$content
-  }
-}
-
 #' Set your Gemini API
 set_gemini_api_key = function(key=NULL, file=NULL) {
   if (is.null(key)) {
     key = suppressWarnings(readLines(file))
   }
   options(gemini_api_key = key)
-}
-
-gemini_result_to_df = function(res, ...) {
-  prompt_var = if (is.null(res[["prompt"]])) NULL else "prompt"
-  if (!is.null(res$error)) {
-    li = c(
-      list(...),
-      res[c("model","json_mode","temperature",prompt_var)],
-      list(
-        error = res$error$message,
-        finishReason = "error",
-        content = NA
-      )
-    )
-    return(as.data.frame(li))
-  }
-
-  parts = res$candidates$content$parts
-  content = unlist(lapply(parts, function(df) df[[1]]))
-
-  li = c(
-    list(...),
-    res[c("model","json_mode","temperature", prompt_var)],
-    list(
-      error = "",
-      finishReason = res$candidates$finishReason[1],
-      content = paste0(content, collapse="")
-    )
-  )
-  return(as.data.frame(li))
 }
 
 #' Generate Content with Gemini API
@@ -162,14 +73,15 @@ gemini_result_to_df = function(res, ...) {
 #' @param model A character string specifying the Gemini model to use. Defaults to `"gemini-2.0-flash"`.
 #' @param media Either a single media object or a list of media objects to be included in the prompt. Call \code{\link{gemini_media_upload}} to upload the document or media.
 #' @param json_mode Logical. If \code{TRUE}, expects the response in JSON format. Defaults to \code{!is.null(response_schema)}.
-#' @param response_schema Optional structured output schema for the response. Defaults to \code{NULL}.
+#' @param response_schema Optional structured output schema for the response. Defaults to \code{NULL}. Even if you want well structures JSON output, you may not always want to provide a response schema. I experienced several cases in which the actual output becomes worse if a schema is provided.
 #' @param temperature A numeric value controlling the randomness of the output. Defaults to 0.1.
-#' @param add_prompt Logical. If \code{TRUE}, includes the prompt in the returned result. Defaults to \code{FALSE}.
+#' @param context A context object generated by \code{gemini_context}. Allows to cache long prompt prefixes or uploaded documents.
+#' @param detailed_results Logical. If \code{TRUE}, returns detailed results of different retriveal steps. Contains also an element \code{has_error} indicating if an error occured and an \code{err_msg}. Use this if you want error handling or debugging. If \code{FALSE} just returns finally parsed content and throws an error if somewhere in the retrieval process and error occurred.
+#' @param make_content Only relevant if \code{detailed_results=TRUE}. If set \code{FALSE} don't attempt last step to generate main content. If \code{json_mode = TRUE} the last content genaration step is a source of error with models that don't reliable generate valid json.
+#' @param add_prompt Only relevant if \code{detailed_results=TRUE}. Then Logical. If \code{TRUE}, includes the prompt in the returned \code{res_df}. Defaults to \code{FALSE}.
 #' @param verbose Logical. If \code{TRUE}, prints debugging and request information. Defaults to \code{FALSE}.
 #' @param api_key A character string containing your Gemini API key. Defaults to the value obtained from \code{getOption("gemini_api_key")}.
-#' @param just_content Logical. If \code{TRUE}, returns only the content portion of the result. JSON is transformed to R. Defaults to \code{TRUE}. Otherwise a data frame with the response of the POST call is returned, which includes fields like status_code.
-#' @param httr_response Logical. Only relevant if just_content=FALSE. Returns POST response in original format, not transformed to a more convenient data set.
-#'
+
 #' @return A list containing the Gemini API response. If \code{as_data_frame} is \code{TRUE}, the response is converted to a data frame.
 #'
 #' @details
@@ -187,13 +99,27 @@ gemini_result_to_df = function(res, ...) {
 #' @seealso \code{\link[httr]{POST}}, \code{\link[jsonlite]{toJSON}}
 #'
 #' @export
-run_gemini = function(prompt, model="gemini-2.0-flash", media=NULL, json_mode=!is.null(response_schema),response_schema = NULL, temperature=0.1, add_prompt=FALSE, verbose=FALSE, api_key=getOption("gemini_api_key"), just_content=TRUE, httr_response=FALSE) {
-  #restore.point("run_gemini")
+run_gemini = function(prompt, model="gemini-2.0-flash", media=NULL, json_mode=!is.null(response_schema),response_schema = NULL, temperature=0.1, context=NULL, detailed_results=FALSE, make_content=TRUE, add_prompt=FALSE,  verbose=FALSE, api_key=getOption("gemini_api_key")) {
+  restore.point("run_gemini")
   if (is.null(api_key)) {
     stop("Please set an api key by calling set_gemini_api_key.")
   }
 
+  if (!detailed_results & !make_content) {
+    stop("If detailed_results = FALSE then you need to set make_content=TRUE")
+  }
+
   url = paste0("https://generativelanguage.googleapis.com/v1beta/models/", model,":generateContent?key=", api_key)
+
+  use_context = FALSE
+  if (!is.null(context)) {
+    use_context = context$is_cached & gemini_context_cache_expire_sec(context)>5
+    # Context not up-to-date anymore
+    if (!use_context) {
+      prompt = paste(context$prompt, prompt)
+      media = c(context$media, media)
+    }
+  }
 
   generationConfig = list(
     temperature = temperature
@@ -212,8 +138,7 @@ run_gemini = function(prompt, model="gemini-2.0-flash", media=NULL, json_mode=!i
   # If media is provided, add one or several media parts.
   if (!is.null(media)) {
     # If media is not already a list of media objects, wrap it in a list.
-    if (!is.list(media) || (is.list(media) && !is.list(media[[1]]) &&
-                            all(c("mime_type", "file_uri") %in% names(media)))) {
+    if (!is.list(media) || (is.list(media) && !is.list(media[[1]]) && all(c("mime_type", "file_uri") %in% names(media)))) {
       media <- list(media)
     }
     for (m in media) {
@@ -225,15 +150,19 @@ run_gemini = function(prompt, model="gemini-2.0-flash", media=NULL, json_mode=!i
 
   body = list(
     contents = list(
-      parts = parts
+      parts = parts,
+      role = "user"
     ),
     generationConfig = generationConfig
   )
+  if (use_context) {
+    body$cachedContent = context$cache_name
+  }
 
   if (verbose)
     cat("\ncURL call body\n\n", toJSON(body))
 
-  response <- POST(
+  httr_resp <- POST(
     url = paste0("https://generativelanguage.googleapis.com/v1beta/models/", model,":generateContent"),
     query = list(key = api_key),
     content_type_json(),
@@ -241,37 +170,105 @@ run_gemini = function(prompt, model="gemini-2.0-flash", media=NULL, json_mode=!i
     body = body
   )
 
-  # Check the status code of the response
-  status_code = status_code(response)
 
-  # Output the content of the response
-  json = content(response, "text")
+  res = internal_gemini_parse_httr_resp(httr_resp,prompt = prompt, add_prompt=add_prompt, model = model,temperature = temperature,make_content = make_content,json_mode=json_mode)
 
-  if (verbose) {
-    cat("\n\nResult:\n",nchar(json), " characters:\n\n",json)
-  }
-  library(jsonlite)
-  res = try(fromJSON(json),silent = TRUE)
-  if (is(res, "try-error")) {
-    res = list(status_code = status_code,parse_error=TRUE, json=json)
-    return(res)
-  }
-  res$status_code = status_code
-  res$parse_error = FALSE
-  if (add_prompt) {
-    res$prompt = prompt
-  }
-  res$model = model
-  res$json_mode = json_mode
-  res$temperature = temperature
-  if (just_content) {
-    df = gemini_result_to_df(res)
-    return(gemini_content(df))
-  }
-  if (httr_response) {
-    return(res)
-  }
-  gemini_result_to_df(res)
+  if (detailed_results) return(res)
 
+  if (res$has_error) stop(res$err_msg)
+
+  return(res$content)
 }
 
+internal_gemini_parse_httr_resp = function(httr_resp, prompt, add_prompt, model, temperature, json_mode, make_content=TRUE) {
+  restore.point("internal_gemini_parse_httr_resp")
+  # Check the status code of the response
+  status_code = status_code(httr_resp)
+
+  result_df = NULL; content=NULL
+  # Output the content of the response
+  resp_json = try(content(httr_resp, "text"))
+  res = list(has_error = TRUE, status_code = status_code, httr_resp=httr_resp, resp_json = resp_json, resp=NULL, err_msg="",err_step="")
+  if (make_content) {
+    res$content = NULL
+  }
+
+  if (status_code != 200) {
+    res$err_msg = paste0(as.character(resp_json))
+    res$err_step = "status_code"
+    return(res)
+  }
+
+  if (is(resp_json, "try-error")) {
+    res$err_msg = paste0(as.character(resp_json))
+    res$err_step = "extract_resp_json"
+    return(res)
+  }
+
+  library(jsonlite)
+  resp = try(fromJSON(resp_json),silent = TRUE)
+  if (is(res, "try-error")) {
+    res$err_msg = paste0(as.character(resp))
+    res$err_step = "parse_resp_json"
+    return(res)
+  }
+  resp$model = model
+  resp$temperature = temperature
+  resp$json_mode = json_mode
+  if (add_prompt) {
+    resp$prompt = prompt
+  }
+
+  res$resp = resp
+
+  res$res_df = try(gemini_resp_to_df(resp), silent=TRUE)
+  if (is(res$res_df, "try-error")) {
+    res$err_msg = paste0(as.character(res$res_df))
+    res$err_step = "res_df"
+    return(res)
+  }
+
+  if (!make_content) {
+    res$has_error = FALSE
+    return(res)
+  }
+
+  res$content = try(gemini_content(res$res_df))
+  if (is(res$content, "try-error")) {
+    res$err_msg = paste0(as.character(res$content))
+    res$err_step = "content"
+    return(res)
+  }
+  res$has_error = FALSE
+  return(res)
+}
+
+
+#' Extract content from a more detailed run_gemini response
+gemini_content = function(res_df) {
+  if (res_df$json_mode) {
+    fromJSON(res_df$content)
+  } else {
+    res_df$content
+  }
+}
+
+gemini_resp_to_df = function(resp) {
+
+  prompt_var = if (is.null(resp[["prompt"]])) NULL else "prompt"
+
+  parts = resp$candidates$content$parts
+  content = unlist(lapply(parts, function(df) df[[1]]))
+
+  li = c(
+    resp[c("model","json_mode","temperature", prompt_var)],
+    input_token_count = resp$usageMetadata$promptTokenCount,
+    output_token_count  = resp$usageMetadata$candidatesTokenCount,
+    cached_token_count = first.non.null(resp$usageMetadata$cachedContentTokenCount, 0),
+    list(
+      finishReason = resp$candidates$finishReason[1],
+      content = paste0(content, collapse="")
+    )
+  )
+  return(as.data.frame(li))
+}

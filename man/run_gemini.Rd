@@ -11,6 +11,7 @@ run_gemini(
   json_mode = !is.null(response_schema),
   response_schema = NULL,
   temperature = 0.1,
+  context = NULL,
   add_prompt = FALSE,
   verbose = FALSE,
   api_key = getOption("gemini_api_key"),
