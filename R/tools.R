@@ -1,3 +1,14 @@
+
+first.non.null = function (...) {
+  args = list(...)
+  for (val in args) {
+    if (!is.null(val))
+      return(val)
+  }
+  return(NULL)
+}
+
+
 na.val = function (x, val = 0) {
   x[is.na(x)] = val
   x
