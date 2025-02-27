@@ -15,14 +15,18 @@ See examples below.
 
 # Installation
 
-Soon it should be available on r-universe. Then call:
+Best install from r-universe:
 
 ```r
 install.packages('rgemini', repos = c('https://skranz.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
-Otherwise try to install directly from Github.
+Otherwise try to install directly from Github:
 
+```r
+if (!requireNamespace("remotes", quietly = TRUE)) { install.packages("remotes") }
+remotes::install_github("skranz/rgemini") 
+```
 
 # Examples
 
@@ -48,7 +52,8 @@ run_gemini("Tell a joke.")
 Return more details of Gemini API response (possible error codes etc)
 
 ```{r}
-run_gemini("Tell a joke.",just_content = FALSE)
+res = run_gemini("Tell a joke.",detailed_results = TRUE)
+str(res)
 ```
 
 
@@ -58,15 +63,11 @@ run_gemini("Tell a joke.",just_content = FALSE)
 run_gemini("Tell 2 jokes. Return JSON with fields 'topic' and 'joke'.",json_mode = TRUE)
 ```
 
-If you set just_content=FALSE the content field contents the JSON text.
-```{r}
-run_gemini("Tell 2 jokes. Return JSON with fields 'topic' and 'joke'.",json_mode = TRUE,just_content = FALSE)
-```
-
-
 # 3. JSON mode with a response schema
 
 We use `arr_resp` or `obj_resp` to build an example response, from which `response_schema` builds a proper JSON schema that can be passed to `run_gemini`
+
+NOTE: In future, it will be better to use use my package https://github.com/skranz/DataSchema to build response schemas. Examples will be adapted. 
 
 ```{r}
 prompt = "List 3 asian countries, their capital, the most famous building and the countries' inhabitants in million."
@@ -120,10 +121,5 @@ run_gemini("Please write down all words you can detect in the image.", media=med
 files = c("~/repbox/gemini/word_img.png", "~/repbox/gemini/colors_pdf.pdf")
 media <- gemini_media_upload(files)
 run_gemini("Please write down all words you can detect in the uploaded pdf and image.", media=media)
-```
 
-Finally, an example with structured output from the uploaded documents:
-```{r}
-run_gemini("Please write down and classify all words you can detect in the uploaded files.", media=media, response_schema = response_schema(arr_resp(file_number=1L, word="blue",type_of_word="")))
 ```
-

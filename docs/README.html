@@ -175,6 +175,15 @@ pre code {
 <li>JSON output also with structured response</li>
 <li>Upload of images, pdf and other documents</li>
 </ul>
+<p>See examples below.</p>
+</div>
+<div id="installation" class="section level1">
+<h1>Installation</h1>
+<p>Best install from r-universe:</p>
+<pre class="r"><code>install.packages(&#39;rgemini&#39;, repos = c(&#39;https://skranz.r-universe.dev&#39;, &#39;https://cloud.r-project.org&#39;))</code></pre>
+<p>Otherwise try to install directly from Github:</p>
+<pre class="r"><code>if (!requireNamespace(&quot;remotes&quot;, quietly = TRUE)) { install.packages(&quot;remotes&quot;) }
+remotes::install_github(&quot;skranz/rgemini&quot;) </code></pre>
 </div>
 <div id="examples" class="section level1">
 <h1>Examples</h1>
@@ -195,11 +204,113 @@ set_gemini_api_key(&quot;&lt;YOUR GEMINI API KEY&gt;&quot;)</code></pre>
 <pre class="r"><code>run_gemini(&quot;Tell a joke.&quot;)</code></pre>
 <pre><code>## [1] &quot;Why don&#39;t scientists trust atoms?\n\nBecause they make up everything!\n&quot;</code></pre>
 <p>Return more details of Gemini API response (possible error codes etc)</p>
-<pre class="r"><code>run_gemini(&quot;Tell a joke.&quot;,just_content = FALSE)</code></pre>
-<pre><code>##              model json_mode temperature error finishReason
-## 1 gemini-2.0-flash     FALSE         0.1               STOP
-##                                                                   content
-## 1 Why don&#39;t scientists trust atoms?\n\nBecause they make up everything!\n</code></pre>
+<pre class="r"><code>res = run_gemini(&quot;Tell a joke.&quot;,detailed_results = TRUE)
+str(res)</code></pre>
+<pre><code>## List of 9
+##  $ has_error  : logi FALSE
+##  $ status_code: int 200
+##  $ httr_resp  :List of 10
+##   ..$ url        : chr &quot;https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCzge4rKQDd_7&quot;| __truncated__
+##   ..$ status_code: int 200
+##   ..$ headers    :List of 13
+##   .. ..$ content-type          : chr &quot;application/json; charset=UTF-8&quot;
+##   .. ..$ vary                  : chr &quot;Origin&quot;
+##   .. ..$ vary                  : chr &quot;X-Origin&quot;
+##   .. ..$ vary                  : chr &quot;Referer&quot;
+##   .. ..$ content-encoding      : chr &quot;gzip&quot;
+##   .. ..$ date                  : chr &quot;Thu, 27 Feb 2025 19:26:30 GMT&quot;
+##   .. ..$ server                : chr &quot;scaffolding on HTTPServer2&quot;
+##   .. ..$ content-length        : chr &quot;335&quot;
+##   .. ..$ x-xss-protection      : chr &quot;0&quot;
+##   .. ..$ x-frame-options       : chr &quot;SAMEORIGIN&quot;
+##   .. ..$ x-content-type-options: chr &quot;nosniff&quot;
+##   .. ..$ server-timing         : chr &quot;gfet4t7; dur=451&quot;
+##   .. ..$ alt-svc               : chr &quot;h3=\&quot;:443\&quot;; ma=2592000,h3-29=\&quot;:443\&quot;; ma=2592000&quot;
+##   .. ..- attr(*, &quot;class&quot;)= chr [1:2] &quot;insensitive&quot; &quot;list&quot;
+##   ..$ all_headers:List of 1
+##   .. ..$ :List of 3
+##   .. .. ..$ status : int 200
+##   .. .. ..$ version: chr &quot;HTTP/2&quot;
+##   .. .. ..$ headers:List of 13
+##   .. .. .. ..$ content-type          : chr &quot;application/json; charset=UTF-8&quot;
+##   .. .. .. ..$ vary                  : chr &quot;Origin&quot;
+##   .. .. .. ..$ vary                  : chr &quot;X-Origin&quot;
+##   .. .. .. ..$ vary                  : chr &quot;Referer&quot;
+##   .. .. .. ..$ content-encoding      : chr &quot;gzip&quot;
+##   .. .. .. ..$ date                  : chr &quot;Thu, 27 Feb 2025 19:26:30 GMT&quot;
+##   .. .. .. ..$ server                : chr &quot;scaffolding on HTTPServer2&quot;
+##   .. .. .. ..$ content-length        : chr &quot;335&quot;
+##   .. .. .. ..$ x-xss-protection      : chr &quot;0&quot;
+##   .. .. .. ..$ x-frame-options       : chr &quot;SAMEORIGIN&quot;
+##   .. .. .. ..$ x-content-type-options: chr &quot;nosniff&quot;
+##   .. .. .. ..$ server-timing         : chr &quot;gfet4t7; dur=451&quot;
+##   .. .. .. ..$ alt-svc               : chr &quot;h3=\&quot;:443\&quot;; ma=2592000,h3-29=\&quot;:443\&quot;; ma=2592000&quot;
+##   .. .. .. ..- attr(*, &quot;class&quot;)= chr [1:2] &quot;insensitive&quot; &quot;list&quot;
+##   ..$ cookies    :&#39;data.frame&#39;:  0 obs. of  7 variables:
+##   .. ..$ domain    : logi(0) 
+##   .. ..$ flag      : logi(0) 
+##   .. ..$ path      : logi(0) 
+##   .. ..$ secure    : logi(0) 
+##   .. ..$ expiration: &#39;POSIXct&#39; num(0) 
+##   .. ..$ name      : logi(0) 
+##   .. ..$ value     : logi(0) 
+##   ..$ content    : raw [1:674] 7b 0a 20 20 ...
+##   ..$ date       : POSIXct[1:1], format: &quot;2025-02-27 19:26:30&quot;
+##   ..$ times      : Named num [1:6] 0 0.00003 0.000031 0.000127 0.000167 ...
+##   .. ..- attr(*, &quot;names&quot;)= chr [1:6] &quot;redirect&quot; &quot;namelookup&quot; &quot;connect&quot; &quot;pretransfer&quot; ...
+##   ..$ request    :List of 7
+##   .. ..$ method    : chr &quot;POST&quot;
+##   .. ..$ url       : chr &quot;https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCzge4rKQDd_7&quot;| __truncated__
+##   .. ..$ headers   : Named chr [1:2] &quot;application/json, text/xml, application/xml, */*&quot; &quot;application/json&quot;
+##   .. .. ..- attr(*, &quot;names&quot;)= chr [1:2] &quot;Accept&quot; &quot;Content-Type&quot;
+##   .. ..$ fields    : NULL
+##   .. ..$ options   :List of 4
+##   .. .. ..$ useragent    : chr &quot;libcurl/7.68.0 r-curl/4.3.2 httr/1.4.2&quot;
+##   .. .. ..$ post         : logi TRUE
+##   .. .. ..$ postfieldsize: int 117
+##   .. .. ..$ postfields   : raw [1:117] 7b 22 63 6f ...
+##   .. ..$ auth_token: NULL
+##   .. ..$ output    : list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr [1:2] &quot;write_memory&quot; &quot;write_function&quot;
+##   .. ..- attr(*, &quot;class&quot;)= chr &quot;request&quot;
+##   ..$ handle     :Class &#39;curl_handle&#39; &lt;externalptr&gt; 
+##   ..- attr(*, &quot;class&quot;)= chr &quot;response&quot;
+##  $ resp_json  : chr &quot;{\n  \&quot;candidates\&quot;: [\n    {\n      \&quot;content\&quot;: {\n        \&quot;parts\&quot;: [\n          {\n            \&quot;text\&quot;: \&quot;| __truncated__
+##  $ resp       :List of 6
+##   ..$ candidates   :&#39;data.frame&#39;:    1 obs. of  3 variables:
+##   .. ..$ content     :&#39;data.frame&#39;:  1 obs. of  2 variables:
+##   .. .. ..$ parts:List of 1
+##   .. .. .. ..$ :&#39;data.frame&#39;:    1 obs. of  1 variable:
+##   .. .. .. .. ..$ text: chr &quot;Why don&#39;t scientists trust atoms?\n\nBecause they make up everything!\n&quot;
+##   .. .. ..$ role : chr &quot;model&quot;
+##   .. ..$ finishReason: chr &quot;STOP&quot;
+##   .. ..$ avgLogprobs : num -0.00303
+##   ..$ usageMetadata:List of 5
+##   .. ..$ promptTokenCount       : int 4
+##   .. ..$ candidatesTokenCount   : int 16
+##   .. ..$ totalTokenCount        : int 20
+##   .. ..$ promptTokensDetails    :&#39;data.frame&#39;:   1 obs. of  2 variables:
+##   .. .. ..$ modality  : chr &quot;TEXT&quot;
+##   .. .. ..$ tokenCount: int 4
+##   .. ..$ candidatesTokensDetails:&#39;data.frame&#39;:   1 obs. of  2 variables:
+##   .. .. ..$ modality  : chr &quot;TEXT&quot;
+##   .. .. ..$ tokenCount: int 16
+##   ..$ modelVersion : chr &quot;gemini-2.0-flash&quot;
+##   ..$ model        : chr &quot;gemini-2.0-flash&quot;
+##   ..$ temperature  : num 0.1
+##   ..$ json_mode    : logi FALSE
+##  $ err_msg    : chr &quot;&quot;
+##  $ err_step   : chr &quot;&quot;
+##  $ res_df     :&#39;data.frame&#39;: 1 obs. of  8 variables:
+##   ..$ model             : chr &quot;gemini-2.0-flash&quot;
+##   ..$ json_mode         : logi FALSE
+##   ..$ temperature       : num 0.1
+##   ..$ input_token_count : int 4
+##   ..$ output_token_count: int 16
+##   ..$ cached_token_count: num 0
+##   ..$ finishReason      : chr &quot;STOP&quot;
+##   ..$ content           : chr &quot;Why don&#39;t scientists trust atoms?\n\nBecause they make up everything!\n&quot;
+##  $ content    : chr &quot;Why don&#39;t scientists trust atoms?\n\nBecause they make up everything!\n&quot;</code></pre>
 </div>
 <div id="json-mode-without-schema" class="section level2">
 <h2>2. JSON mode without schema</h2>
@@ -207,27 +318,23 @@ set_gemini_api_key(&quot;&lt;YOUR GEMINI API KEY&gt;&quot;)</code></pre>
 <pre><code>##         topic                                                              joke
 ## 1 Programming Why do programmers prefer dark mode? Because light attracts bugs!
 ## 2        Math            Why was six afraid of seven? Because seven eight nine!</code></pre>
-<p>If you set just_content=FALSE the content field contents the JSON text.</p>
-<pre class="r"><code>run_gemini(&quot;Tell 2 jokes. Return JSON with fields &#39;topic&#39; and &#39;joke&#39;.&quot;,json_mode = TRUE,just_content = FALSE)</code></pre>
-<pre><code>##              model json_mode temperature error finishReason
-## 1 gemini-2.0-flash      TRUE         0.1               STOP
-##                                                                                                                                                                                                                               content
-## 1 [\n  {\n    &quot;topic&quot;: &quot;Programming&quot;,\n    &quot;joke&quot;: &quot;Why do programmers prefer dark mode? Because light attracts bugs!&quot;\n  },\n  {\n    &quot;topic&quot;: &quot;Math&quot;,\n    &quot;joke&quot;: &quot;Why was six afraid of seven? Because seven eight nine!&quot;\n  }\n]</code></pre>
 </div>
 </div>
 <div id="json-mode-with-a-response-schema" class="section level1">
 <h1>3. JSON mode with a response schema</h1>
 <p>We use <code>arr_resp</code> or <code>obj_resp</code> to build an example response, from which <code>response_schema</code> builds a proper JSON schema that can be passed to <code>run_gemini</code></p>
+<p>NOTE: In future, it will be better to use use my package <a href="https://github.com/skranz/DataSchema" class="uri">https://github.com/skranz/DataSchema</a> to build response schemas. Examples will be adapted.</p>
 <pre class="r"><code>prompt = &quot;List 3 asian countries, their capital, the most famous building and the countries&#39; inhabitants in million.&quot;
 
 # Creates a schema from an example
 schema = response_schema(arr_resp(capital = &quot;Paris&quot;, country=&quot;France&quot;, famous_building=&quot;Eiffel Tower&quot;, population = 60.1))
 
 run_gemini(prompt = prompt,response_schema = schema)</code></pre>
-<pre><code>##     capital country     famous_building population
-## 1     Tokyo   Japan       Tokyo Skytree      125.7
-## 2   Beijing   China Great Wall of China     1453.0
-## 3 New Delhi   India           Taj Mahal     1408.0</code></pre>
+<pre><code>##      [,1]      [,2]        [,3]                  [,4]                   
+## [1,] &quot;Country&quot; &quot;Capital&quot;   &quot;Famous Building&quot;     &quot;Population (millions)&quot;
+## [2,] &quot;Japan&quot;   &quot;Tokyo&quot;     &quot;Tokyo Skytree&quot;       &quot;125.7&quot;                
+## [3,] &quot;China&quot;   &quot;Beijing&quot;   &quot;Great Wall of China&quot; &quot;1453&quot;                 
+## [4,] &quot;India&quot;   &quot;New Delhi&quot; &quot;Taj Mahal&quot;           &quot;1406.6&quot;</code></pre>
 <p>Here is a more comples nested schema. Will return nested tibbles.</p>
 <pre class="r"><code>prompt = &quot;Show info for one african country, its capital with name and population in mio, the most famous building and inhabitants in million. Add three facts about the country.&quot;
 
@@ -241,18 +348,16 @@ schema = response_schema(obj_resp(
   facts = arr_resp(factno=1L, name=&quot;fact1&quot;, descr=&quot;fact_description&quot;)
 ))
 
-# For this schema run_gemini returns a data frame with nested data frames
-df = run_gemini(prompt = prompt,response_schema = schema)
-str(df)</code></pre>
+# For this schema run_gemini currently
+# returns a list (obj_resp) or data frame (arr_resp) with nested data frames
+res = run_gemini(prompt = prompt,response_schema = schema)
+str(res)</code></pre>
 <pre><code>## List of 5
 ##  $ capital        :List of 2
-##   ..$ cap_pop: int 4
+##   ..$ cap_pop: int 29
 ##   ..$ capital: chr &quot;Nairobi&quot;
 ##  $ country        : chr &quot;Kenya&quot;
-##  $ facts          :&#39;data.frame&#39;: 3 obs. of  3 variables:
-##   ..$ descr : chr [1:3] &quot;Kenya is known for its diverse wildlife, including lions, elephants, and giraffes.&quot; &quot;The Great Rift Valley, a geological fault line, runs through Kenya.&quot; &quot;Kenya is a major producer of coffee and tea.&quot;
-##   ..$ factno: int [1:3] 1 2 3
-##   ..$ name  : chr [1:3] &quot;Wildlife&quot; &quot;Great Rift Valley&quot; &quot;Agriculture&quot;
+##  $ facts          : int [1, 1:3] 1 2 3
 ##  $ famous_building: chr &quot;Kenyatta International Conference Centre&quot;
 ##  $ population     : int 54</code></pre>
 <div id="use-an-image" class="section level2">
@@ -272,18 +377,7 @@ run_gemini(&quot;Please write down all words you can detect in the image.&quot;,
 <pre class="r"><code>files = c(&quot;~/repbox/gemini/word_img.png&quot;, &quot;~/repbox/gemini/colors_pdf.pdf&quot;)
 media &lt;- gemini_media_upload(files)
 run_gemini(&quot;Please write down all words you can detect in the uploaded pdf and image.&quot;, media=media)</code></pre>
-<pre><code>## [1] &quot;Here are the words I detected in the images:\n\n**From the first image:**\n\n*   Music\n*   Bach\n*   Economics\n*   Physics\n\n**From the second image:**\n\n*   blue\n*   greed\n*   red\n*   white\n*   1&quot;</code></pre>
-<p>Finally, an example with structured output from the uploaded documents:</p>
-<pre class="r"><code>run_gemini(&quot;Please write down and classify all words you can detect in the uploaded files.&quot;, media=media, response_schema = response_schema(arr_resp(file_number=1L, word=&quot;blue&quot;,type_of_word=&quot;&quot;)))</code></pre>
-<pre><code>##   file_number type_of_word      word
-## 1           1      subject     Music
-## 2           1         name      Bach
-## 3           1      subject Economics
-## 4           1      subject   Physics
-## 5           2        color      blue
-## 6           2  description     greed
-## 7           2        color       red
-## 8           2  description     white</code></pre>
+<pre><code>## [1] &quot;Here are the words I detected in the images:\n\n**Image 1:**\n\n*   Music\n*   Bach\n*   Economics\n*   Physics\n\n**Image 2:**\n\n*   blue\n*   greed\n*   red\n*   white\n*   1&quot;</code></pre>
 </div>
 </div>
 

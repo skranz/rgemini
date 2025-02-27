@@ -6,7 +6,7 @@
 \usage{
 gemini_cache_context(
   context,
-  verbose = FALSE,
+  verbose = TRUE,
   api_key = getOption("gemini_api_key")
 )
 }

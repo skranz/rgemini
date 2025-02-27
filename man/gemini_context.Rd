@@ -8,7 +8,7 @@ gemini_context(
   prompt = NULL,
   model = "gemini-1.5-flash-001",
   media = NULL,
-  ttl_sec = 60 * 60,
+  ttl_sec = 10 * 60,
   role = "user",
   do_cache = TRUE,
   api_key = getOption("gemini_api_key")

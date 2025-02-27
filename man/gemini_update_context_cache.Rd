@@ -10,6 +10,7 @@ gemini_update_context_cache(
   only_if_worked = TRUE,
   only_if_expired = TRUE,
   expired_sec_margin = 10,
+  verbose = TRUE,
   api_key = getOption("gemini_api_key")
 )
 }

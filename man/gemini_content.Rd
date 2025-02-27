@@ -4,7 +4,7 @@
 \alias{gemini_content}
 \title{Extract content from a more detailed run_gemini response}
 \usage{
-gemini_content(result)
+gemini_content(res_df)
 }
 \description{
 Extract content from a more detailed run_gemini response
