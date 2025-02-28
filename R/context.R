@@ -16,7 +16,7 @@ example = function() {
 #' Initializes a Gemini context object with caching options.
 #'
 #' @param prompt The input prompt for the model.
-#' @param model The model to use (default: `"gemini-1.5-flash-001"`).
+#' @param model The model to use.
 #' @param media Optional media input.
 #' @param ttl_sec Time-to-live for cache in seconds (default: `60*60`).
 #' @param role The role of the request (default: `"user"`).
@@ -25,7 +25,7 @@ example = function() {
 #'
 #' @return A `gemini_context` object.
 #' @export
-gemini_context = function(prompt=NULL,model="gemini-1.5-flash-001", media=NULL, ttl_sec=10*60, role="user", do_cache = TRUE,  api_key=getOption("gemini_api_key")) {
+gemini_context = function(prompt=NULL,model="gemini-2.0-flash", media=NULL, ttl_sec=10*60, role="user", do_cache = TRUE,  api_key=getOption("gemini_api_key")) {
   context = list(
     prompt = prompt,
     model = model,

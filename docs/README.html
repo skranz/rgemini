@@ -192,6 +192,15 @@ remotes::install_github(&quot;skranz/rgemini&quot;) </code></pre>
 <pre><code>## Loading required package: jsonlite</code></pre>
 <pre><code>## Loading required package: httr</code></pre>
 <pre><code>## Loading required package: restorepoint</code></pre>
+<pre><code>## Loading required package: dplyr</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
 <pre><code>## 
 ## Attaching package: &#39;rgemini&#39;</code></pre>
 <pre><code>## The following object is masked from &#39;package:utils&#39;:
@@ -203,117 +212,13 @@ set_gemini_api_key(&quot;&lt;YOUR GEMINI API KEY&gt;&quot;)</code></pre>
 <p>A simple prompt.</p>
 <pre class="r"><code>run_gemini(&quot;Tell a joke.&quot;)</code></pre>
 <pre><code>## [1] &quot;Why don&#39;t scientists trust atoms?\n\nBecause they make up everything!\n&quot;</code></pre>
-<p>Return more details of Gemini API response (possible error codes etc)</p>
-<pre class="r"><code>res = run_gemini(&quot;Tell a joke.&quot;,detailed_results = TRUE)
-str(res)</code></pre>
-<pre><code>## List of 9
-##  $ has_error  : logi FALSE
-##  $ status_code: int 200
-##  $ httr_resp  :List of 10
-##   ..$ url        : chr &quot;https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCzge4rKQDd_7&quot;| __truncated__
-##   ..$ status_code: int 200
-##   ..$ headers    :List of 13
-##   .. ..$ content-type          : chr &quot;application/json; charset=UTF-8&quot;
-##   .. ..$ vary                  : chr &quot;Origin&quot;
-##   .. ..$ vary                  : chr &quot;X-Origin&quot;
-##   .. ..$ vary                  : chr &quot;Referer&quot;
-##   .. ..$ content-encoding      : chr &quot;gzip&quot;
-##   .. ..$ date                  : chr &quot;Thu, 27 Feb 2025 19:26:30 GMT&quot;
-##   .. ..$ server                : chr &quot;scaffolding on HTTPServer2&quot;
-##   .. ..$ content-length        : chr &quot;335&quot;
-##   .. ..$ x-xss-protection      : chr &quot;0&quot;
-##   .. ..$ x-frame-options       : chr &quot;SAMEORIGIN&quot;
-##   .. ..$ x-content-type-options: chr &quot;nosniff&quot;
-##   .. ..$ server-timing         : chr &quot;gfet4t7; dur=451&quot;
-##   .. ..$ alt-svc               : chr &quot;h3=\&quot;:443\&quot;; ma=2592000,h3-29=\&quot;:443\&quot;; ma=2592000&quot;
-##   .. ..- attr(*, &quot;class&quot;)= chr [1:2] &quot;insensitive&quot; &quot;list&quot;
-##   ..$ all_headers:List of 1
-##   .. ..$ :List of 3
-##   .. .. ..$ status : int 200
-##   .. .. ..$ version: chr &quot;HTTP/2&quot;
-##   .. .. ..$ headers:List of 13
-##   .. .. .. ..$ content-type          : chr &quot;application/json; charset=UTF-8&quot;
-##   .. .. .. ..$ vary                  : chr &quot;Origin&quot;
-##   .. .. .. ..$ vary                  : chr &quot;X-Origin&quot;
-##   .. .. .. ..$ vary                  : chr &quot;Referer&quot;
-##   .. .. .. ..$ content-encoding      : chr &quot;gzip&quot;
-##   .. .. .. ..$ date                  : chr &quot;Thu, 27 Feb 2025 19:26:30 GMT&quot;
-##   .. .. .. ..$ server                : chr &quot;scaffolding on HTTPServer2&quot;
-##   .. .. .. ..$ content-length        : chr &quot;335&quot;
-##   .. .. .. ..$ x-xss-protection      : chr &quot;0&quot;
-##   .. .. .. ..$ x-frame-options       : chr &quot;SAMEORIGIN&quot;
-##   .. .. .. ..$ x-content-type-options: chr &quot;nosniff&quot;
-##   .. .. .. ..$ server-timing         : chr &quot;gfet4t7; dur=451&quot;
-##   .. .. .. ..$ alt-svc               : chr &quot;h3=\&quot;:443\&quot;; ma=2592000,h3-29=\&quot;:443\&quot;; ma=2592000&quot;
-##   .. .. .. ..- attr(*, &quot;class&quot;)= chr [1:2] &quot;insensitive&quot; &quot;list&quot;
-##   ..$ cookies    :&#39;data.frame&#39;:  0 obs. of  7 variables:
-##   .. ..$ domain    : logi(0) 
-##   .. ..$ flag      : logi(0) 
-##   .. ..$ path      : logi(0) 
-##   .. ..$ secure    : logi(0) 
-##   .. ..$ expiration: &#39;POSIXct&#39; num(0) 
-##   .. ..$ name      : logi(0) 
-##   .. ..$ value     : logi(0) 
-##   ..$ content    : raw [1:674] 7b 0a 20 20 ...
-##   ..$ date       : POSIXct[1:1], format: &quot;2025-02-27 19:26:30&quot;
-##   ..$ times      : Named num [1:6] 0 0.00003 0.000031 0.000127 0.000167 ...
-##   .. ..- attr(*, &quot;names&quot;)= chr [1:6] &quot;redirect&quot; &quot;namelookup&quot; &quot;connect&quot; &quot;pretransfer&quot; ...
-##   ..$ request    :List of 7
-##   .. ..$ method    : chr &quot;POST&quot;
-##   .. ..$ url       : chr &quot;https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCzge4rKQDd_7&quot;| __truncated__
-##   .. ..$ headers   : Named chr [1:2] &quot;application/json, text/xml, application/xml, */*&quot; &quot;application/json&quot;
-##   .. .. ..- attr(*, &quot;names&quot;)= chr [1:2] &quot;Accept&quot; &quot;Content-Type&quot;
-##   .. ..$ fields    : NULL
-##   .. ..$ options   :List of 4
-##   .. .. ..$ useragent    : chr &quot;libcurl/7.68.0 r-curl/4.3.2 httr/1.4.2&quot;
-##   .. .. ..$ post         : logi TRUE
-##   .. .. ..$ postfieldsize: int 117
-##   .. .. ..$ postfields   : raw [1:117] 7b 22 63 6f ...
-##   .. ..$ auth_token: NULL
-##   .. ..$ output    : list()
-##   .. .. ..- attr(*, &quot;class&quot;)= chr [1:2] &quot;write_memory&quot; &quot;write_function&quot;
-##   .. ..- attr(*, &quot;class&quot;)= chr &quot;request&quot;
-##   ..$ handle     :Class &#39;curl_handle&#39; &lt;externalptr&gt; 
-##   ..- attr(*, &quot;class&quot;)= chr &quot;response&quot;
-##  $ resp_json  : chr &quot;{\n  \&quot;candidates\&quot;: [\n    {\n      \&quot;content\&quot;: {\n        \&quot;parts\&quot;: [\n          {\n            \&quot;text\&quot;: \&quot;| __truncated__
-##  $ resp       :List of 6
-##   ..$ candidates   :&#39;data.frame&#39;:    1 obs. of  3 variables:
-##   .. ..$ content     :&#39;data.frame&#39;:  1 obs. of  2 variables:
-##   .. .. ..$ parts:List of 1
-##   .. .. .. ..$ :&#39;data.frame&#39;:    1 obs. of  1 variable:
-##   .. .. .. .. ..$ text: chr &quot;Why don&#39;t scientists trust atoms?\n\nBecause they make up everything!\n&quot;
-##   .. .. ..$ role : chr &quot;model&quot;
-##   .. ..$ finishReason: chr &quot;STOP&quot;
-##   .. ..$ avgLogprobs : num -0.00303
-##   ..$ usageMetadata:List of 5
-##   .. ..$ promptTokenCount       : int 4
-##   .. ..$ candidatesTokenCount   : int 16
-##   .. ..$ totalTokenCount        : int 20
-##   .. ..$ promptTokensDetails    :&#39;data.frame&#39;:   1 obs. of  2 variables:
-##   .. .. ..$ modality  : chr &quot;TEXT&quot;
-##   .. .. ..$ tokenCount: int 4
-##   .. ..$ candidatesTokensDetails:&#39;data.frame&#39;:   1 obs. of  2 variables:
-##   .. .. ..$ modality  : chr &quot;TEXT&quot;
-##   .. .. ..$ tokenCount: int 16
-##   ..$ modelVersion : chr &quot;gemini-2.0-flash&quot;
-##   ..$ model        : chr &quot;gemini-2.0-flash&quot;
-##   ..$ temperature  : num 0.1
-##   ..$ json_mode    : logi FALSE
-##  $ err_msg    : chr &quot;&quot;
-##  $ err_step   : chr &quot;&quot;
-##  $ res_df     :&#39;data.frame&#39;: 1 obs. of  8 variables:
-##   ..$ model             : chr &quot;gemini-2.0-flash&quot;
-##   ..$ json_mode         : logi FALSE
-##   ..$ temperature       : num 0.1
-##   ..$ input_token_count : int 4
-##   ..$ output_token_count: int 16
-##   ..$ cached_token_count: num 0
-##   ..$ finishReason      : chr &quot;STOP&quot;
-##   ..$ content           : chr &quot;Why don&#39;t scientists trust atoms?\n\nBecause they make up everything!\n&quot;
-##  $ content    : chr &quot;Why don&#39;t scientists trust atoms?\n\nBecause they make up everything!\n&quot;</code></pre>
+<p>Return more details of Gemini API response.</p>
+<pre class="r"><code>details = run_gemini(&quot;Tell a joke.&quot;,detailed_results = TRUE)
+# str(details)</code></pre>
+<p>The returned <code>details</code> are a large list with all sort of information.</p>
 </div>
-<div id="json-mode-without-schema" class="section level2">
-<h2>2. JSON mode without schema</h2>
+<div id="json-mode" class="section level2">
+<h2>2. JSON mode</h2>
 <pre class="r"><code>run_gemini(&quot;Tell 2 jokes. Return JSON with fields &#39;topic&#39; and &#39;joke&#39;.&quot;,json_mode = TRUE)</code></pre>
 <pre><code>##         topic                                                              joke
 ## 1 Programming Why do programmers prefer dark mode? Because light attracts bugs!
@@ -322,19 +227,18 @@ str(res)</code></pre>
 </div>
 <div id="json-mode-with-a-response-schema" class="section level1">
 <h1>3. JSON mode with a response schema</h1>
-<p>We use <code>arr_resp</code> or <code>obj_resp</code> to build an example response, from which <code>response_schema</code> builds a proper JSON schema that can be passed to <code>run_gemini</code></p>
-<p>NOTE: In future, it will be better to use use my package <a href="https://github.com/skranz/DataSchema" class="uri">https://github.com/skranz/DataSchema</a> to build response schemas. Examples will be adapted.</p>
+<p>The Gemini API also allows to provide JSON response schemas (see <a href="https://json-schema.org/learn/getting-started-step-by-step" class="uri">https://json-schema.org/learn/getting-started-step-by-step</a>) for better guarantees that your JSON output satisfies a desired structure.</p>
+<p><code>rgemini</code> has small helper functions <code>arr_resp</code>, <code>obj_resp</code> and <code>response_schema</code> to build simple json schemas from an example.</p>
 <pre class="r"><code>prompt = &quot;List 3 asian countries, their capital, the most famous building and the countries&#39; inhabitants in million.&quot;
 
 # Creates a schema from an example
-schema = response_schema(arr_resp(capital = &quot;Paris&quot;, country=&quot;France&quot;, famous_building=&quot;Eiffel Tower&quot;, population = 60.1))
+schema = response_schema(arr_resp(obj_resp(capital = &quot;Paris&quot;, country=&quot;France&quot;, famous_building=&quot;Eiffel Tower&quot;, population = 60.1)))
 
 run_gemini(prompt = prompt,response_schema = schema)</code></pre>
-<pre><code>##      [,1]      [,2]        [,3]                  [,4]                   
-## [1,] &quot;Country&quot; &quot;Capital&quot;   &quot;Famous Building&quot;     &quot;Population (millions)&quot;
-## [2,] &quot;Japan&quot;   &quot;Tokyo&quot;     &quot;Tokyo Skytree&quot;       &quot;125.7&quot;                
-## [3,] &quot;China&quot;   &quot;Beijing&quot;   &quot;Great Wall of China&quot; &quot;1453&quot;                 
-## [4,] &quot;India&quot;   &quot;New Delhi&quot; &quot;Taj Mahal&quot;           &quot;1406.6&quot;</code></pre>
+<pre><code>##   capital     country      famous_building population
+## 1   Tokyo       Japan        Tokyo Skytree     125.70
+## 2 Beijing       China  Great Wall of China    1453.00
+## 3   Seoul South Korea Gyeongbokgung Palace      51.75</code></pre>
 <p>Here is a more comples nested schema. Will return nested tibbles.</p>
 <pre class="r"><code>prompt = &quot;Show info for one african country, its capital with name and population in mio, the most famous building and inhabitants in million. Add three facts about the country.&quot;
 
@@ -345,7 +249,7 @@ schema = response_schema(obj_resp(
   capital = obj_resp(capital=&quot;Paris&quot;, cap_pop=5),
   country=&quot;France&quot;, famous_building=&quot;Eiffel Tower&quot;,
   population = 60.2,
-  facts = arr_resp(factno=1L, name=&quot;fact1&quot;, descr=&quot;fact_description&quot;)
+  facts = arr_resp(obj_resp(factno=1L, name=&quot;fact1&quot;, descr=&quot;fact_description&quot;))
 ))
 
 # For this schema run_gemini currently
@@ -354,12 +258,20 @@ res = run_gemini(prompt = prompt,response_schema = schema)
 str(res)</code></pre>
 <pre><code>## List of 5
 ##  $ capital        :List of 2
-##   ..$ cap_pop: int 29
+##   ..$ cap_pop: int 4
 ##   ..$ capital: chr &quot;Nairobi&quot;
 ##  $ country        : chr &quot;Kenya&quot;
-##  $ facts          : int [1, 1:3] 1 2 3
+##  $ facts          :&#39;data.frame&#39;: 3 obs. of  3 variables:
+##   ..$ descr : chr [1:3] &quot;Kenya is known for its safaris and diverse wildlife reserves.&quot; &quot;Kenya is home to numerous world-renowned athletes, particularly in long-distance running.&quot; &quot;Kenya is a major producer of coffee and tea, contributing significantly to its economy.&quot;
+##   ..$ factno: int [1:3] 1 2 3
+##   ..$ name  : chr [1:3] &quot;Wildlife Safaris&quot; &quot;Athletic Prowess&quot; &quot;Agricultural Exports&quot;
 ##  $ famous_building: chr &quot;Kenyatta International Conference Centre&quot;
-##  $ population     : int 54</code></pre>
+##  $ population     : int 55</code></pre>
+<p>Two things to note:</p>
+<ul>
+<li><p>From my experience with larger tasks providing a schema does not always improve things, I often got better output without a schema. But that might change.</p></li>
+<li><p>I am currently building the package <code>DataSchema</code> (<a href="https://github.com/skranz/DataSchema" class="uri">https://github.com/skranz/DataSchema</a>) that will allow more complex schema specifications.</p></li>
+</ul>
 <div id="use-an-image" class="section level2">
 <h2>4. Use an image</h2>
 <p>That is the image we upload:</p>
@@ -377,7 +289,34 @@ run_gemini(&quot;Please write down all words you can detect in the image.&quot;,
 <pre class="r"><code>files = c(&quot;~/repbox/gemini/word_img.png&quot;, &quot;~/repbox/gemini/colors_pdf.pdf&quot;)
 media &lt;- gemini_media_upload(files)
 run_gemini(&quot;Please write down all words you can detect in the uploaded pdf and image.&quot;, media=media)</code></pre>
-<pre><code>## [1] &quot;Here are the words I detected in the images:\n\n**Image 1:**\n\n*   Music\n*   Bach\n*   Economics\n*   Physics\n\n**Image 2:**\n\n*   blue\n*   greed\n*   red\n*   white\n*   1&quot;</code></pre>
+<pre><code>## [1] &quot;Here are the words I detected in the images:\n\n**From the first image:**\n\n*   Music\n*   Bach\n*   Economics\n*   Physics\n\n**From the second image:**\n\n*   blue\n*   greed\n*   red\n*   white\n*   1&quot;</code></pre>
+</div>
+<div id="context-caching" class="section level2">
+<h2>6. Context caching</h2>
+<p>The gemini API also allows context caching (see <a href="https://ai.google.dev/gemini-api/docs/caching" class="uri">https://ai.google.dev/gemini-api/docs/caching</a>). Context caching can e.g. be helpful if you have repeated prompts to the same large PDF document (or a set of PDF documents).</p>
+<p>To use context caching you can generate a context object with <code>gemini_context</code> and pass it to <code>gemini_run</code>. I have not yet made a nice example for this README though.</p>
+</div>
+<div id="get-information-about-available-gemini-models" class="section level2">
+<h2>7. Get information about available gemini models</h2>
+<p>Use a <code>gemini_list_models()</code> function to get a data frame with information about all available models at the Gemini API.</p>
+<pre class="r"><code>gemini_list_models() %&gt;% 
+  filter(startsWith(displayName, &quot;Gemini 2&quot;))</code></pre>
+<pre><code>## Warning: Outer names are only allowed for unnamed scalar atomic inputs</code></pre>
+<pre><code>## # A tibble: 25 × 11
+##    name    version displayName  description     inputTokenLimit outputTokenLimit
+##    &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;        &lt;chr&gt;                     &lt;int&gt;            &lt;int&gt;
+##  1 models… 2.0     Gemini 2.0 … Gemini 2.0 Fla…         1048576             8192
+##  2 models… 2.0     Gemini 2.0 … Gemini 2.0 Fla…         1048576             8192
+##  3 models… 2.0     Gemini 2.0 … Gemini 2.0 Fla…         1048576             8192
+##  4 models… 2.0     Gemini 2.0 … Gemini 2.0 Fla…         1048576             8192
+##  5 models… 2.0     Gemini 2.0 … Gemini 2.0 Fla…         1048576             8192
+##  6 models… 2.0     Gemini 2.0 … Stable version…         1048576             8192
+##  7 models… 2.0     Gemini 2.0 … Stable version…         1048576             8192
+##  8 models… 2.0     Gemini 2.0 … Stable version…         1048576             8192
+##  9 models… 2.0     Gemini 2.0 … Stable version…         1048576             8192
+## 10 models… 2.0     Gemini 2.0 … Gemini 2.0 Fla…         1048576             8192
+## # … with 15 more rows, and 5 more variables: supportedGenerationMethods &lt;list&gt;,
+## #   temperature &lt;dbl&gt;, topP &lt;dbl&gt;, topK &lt;int&gt;, maxTemperature &lt;int&gt;</code></pre>
 </div>
 </div>
 

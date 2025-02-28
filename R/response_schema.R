@@ -1,7 +1,14 @@
 
 
 example = function() {
-  undebug(response_schema)
+  debug(response_schema)
+
+  schema = response_schema(arr_resp(capital = "Paris", country="France", famous_building="Eiffel Tower", population = 60.1))
+
+
+  schema = response_schema(arr_resp(facts = arr_resp(name="fact1", descr="fact_description")))
+
+
   schema = response_schema(arr_resp(facts = arr_resp(name="fact1", descr="fact_description")))
 
   schema = response_schema(arr_resp(city = "Paris", country="France", famous_building="Eiffel Tower", population = 5.2, facts = arr_resp(name="fact1", descr="fact_description")))
@@ -134,6 +141,8 @@ response_schema <- function(example) {
       if (length(x) == 0) {
         items <- list()
       } else {
+        items = x[[1]]
+        #class(items) = "list"
         items <- schema_fragment(x[[1]], in_array = TRUE)
       }
       return(list(type = "array", items = items))
