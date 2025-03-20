@@ -143,7 +143,7 @@ guess_mime_type <- function(file_path) {
          "html" = "text/html",
          "htm"  = "text/html",
          "css"  = "text/css",
-         "md"   = "text/md",                   # Markdown
+         "md"   = "text/markdown",             # Markdown
          "csv"  = "text/csv",
          "xml"  = "text/xml",
          "rtf"  = "text/rtf",
