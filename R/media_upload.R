@@ -124,7 +124,7 @@ gemini_media_upload <- function(file_path,
     cat("File uploaded successfully. File URI:", file_uri, "\n")
   }
 
-  # Return an object that can be directly used in run_gemini (file_data block)
+  # Return an object that can be directly used in run_gemini
   return(list(mime_type = mime_type, file_uri = file_uri))
 }
 
